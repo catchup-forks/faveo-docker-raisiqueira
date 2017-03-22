@@ -1,0 +1,57 @@
+# Versão
+# Mantedor Raí Siqueira
+version: '2'
+
+# Inicio dos serviços
+
+services:
+  # Banco Maria DB
+  mysql:
+    image: mariadb:latest
+    container_name: mysql-faveo
+    restart: always
+    volumes:
+      - "./.datadb:/var/lib/mysql"
+    environment:
+      MYSQL_ROOT_PASSWORD: faveo
+      MYSQL_DATABASE: faveo
+      MYSQL_USER: faveo
+      MYSQL_PASSWORD: faveo
+    ports:
+      - "3306:3306"
+
+  # Cache Redis
+  cache:
+    image: ambientum/redis:3.2
+    container_name: cache-faveo
+    command: --appendonly yes
+    volumes:
+      - redis-data:/data
+    restart: always
+
+  # App
+  app:
+    build: nginx
+    container_name: app-faveo
+    depends_on:
+      - mysql
+      - cache
+    volumes:
+      - ./faveo:/var/www/app
+    ports:
+      - "8082:8080"
+    restart: always
+
+  # Laravel Queues
+#  queue:
+#    image: ambientum/php:7.1
+#    container_name: queue-faveo
+#    volumes:
+#      - .:/var/www/app
+#    links:
+#      - mysql
+#      - cache
+volumes:
+  # Redis Data
+  redis-data:
+    driver: local
