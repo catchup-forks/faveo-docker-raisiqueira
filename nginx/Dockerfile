@@ -32,6 +32,23 @@ USER ambientum
 
 WORKDIR "/var/www/app"
 
+# Get Faveo from github and composer install
+RUN echo "--> Clonning Faveo repository" && \
+	git clone https://github.com/ladybirdweb/faveo-helpdesk.git . && \
+	echo "--> composer install" && \
+	composer install && \
+	composer clear-cache
+
+# Change to root user
+USER root
+
+# Run Permissions
+RUN echo "--> Change group to www-data" && \
+	chgrp -R www-data . storage bootstrap/cache
+
+# Change again to ambientum user
+USER ambientum
+
 # Expose Nginx webserver Port
 EXPOSE 8080
 
