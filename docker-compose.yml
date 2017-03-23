@@ -31,13 +31,11 @@ services:
 
   # App
   app:
-    build: nginx
+    image: raisiqueira/faveo-imec:1.1
     container_name: app-faveo
     depends_on:
       - mysql
       - cache
-    volumes:
-      - ./faveo:/var/www/app
     ports:
       - "8082:8080"
     restart: always
