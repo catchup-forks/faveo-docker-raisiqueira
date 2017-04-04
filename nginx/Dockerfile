@@ -34,7 +34,7 @@ WORKDIR "/var/www/app"
 
 # Get Faveo from github and composer install
 RUN echo "--> Clonning Faveo repository" && \
-	git clone https://github.com/ladybirdweb/faveo-helpdesk.git . && \
+	git clone https://github.com/ladybirdweb/faveo-servicedesk-community . && \
 	echo "--> composer install" && \
 	composer install && \
 	composer clear-cache
