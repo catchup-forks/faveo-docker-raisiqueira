@@ -5,24 +5,12 @@ version: '2'
 # Inicio dos serviços
 
 services:
-  # Banco Maria DB
-  mysql:
-    image: mariadb:latest
-    container_name: mysql-faveo
-    restart: always
-    volumes:
-      - "./.datadb:/var/lib/mysql"
-    environment:
-      MYSQL_ROOT_PASSWORD: faveo
-      MYSQL_DATABASE: faveo
-      MYSQL_USER: faveo
-      MYSQL_PASSWORD: faveo
-    ports:
-      - "3306:3306"
-
   # App
   app:
-    image: raisiqueira/faveo-imec:1.1
+#    build:
+#      context: ./.docker/nginx-php
+#      dockerfile: Dockerfilelatest
+    image: raisiqueira/faveo-imec:1.2
     container_name: app-faveo
     volumes:
       - ./.env:/var/www/app/.env
@@ -32,7 +20,51 @@ services:
       - "8082:8080"
     restart: always
 
-  # Laravel Queues
+
+  php:
+    image: jguyomard/laravel-php:7.1
+    volumes:
+      - ./storage/logs/nginx/:/var/log/nginx
+      - ./config/sites/:/etc/nginx/sites-enabled/
+      - $PROJECT_ROOT:/var/www
+    environment:
+      - "DB_HOST=mysql"
+      - "DB_DATABASE=homestead"
+      - "DB_USERNAME=homestead"
+      - "DB_PASSWORD=homestead"
+      - "REDIS_HOST=redis"
+      - "REDIS_PORT=6379"
+
+  nginx:
+#    build:
+#      context: ./.docker/nginx-php
+#      dockerfile: Dockerfile71xdebug
+#    container_name: webserver71  
+    image: jguyomard/laravel-nginx:1.13
+    volumes_from:
+      - php
+    ports:
+      - 8080:80
+
+
+  # Banco Maria DB
+  mysql:
+    image: mysql:5.6
+    container_name: mysql-faveo
+    restart: always
+    volumes:
+      - mysqldata:/var/lib/mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: faveo
+      MYSQL_DATABASE: faveo
+      MYSQL_USER: faveo
+      MYSQL_PASSWORD: faveo
+    ports:
+      - "3306:3306"
+
+
+# Laravel Queues
 #  queue:
 #    image: ambientum/php:7.1
 #    container_name: queue-faveo
@@ -40,3 +72,14 @@ services:
 #      - .:/var/www/app
 #    links:
 #      - mysql
+
+  redis:
+    image: redis:4.0-alpine
+    container_name: redis
+    command: redis-server --appendonly yes
+    volumes:
+      - ./storage/data/redis:/data
+    ports:
+      - 16379:6379
+volumes:
+  mysqldata:
